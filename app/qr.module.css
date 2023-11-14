@@ -1,0 +1,22 @@
+.nav {
+  background: #3371a5;
+  box-shadow: 0px 8px 33px -16px #3371a5;
+}
+.bgCustoms {
+  background: #d1e5f581;
+  /* box-shadow: 0px 8px 33px -16px #3371a5; */
+  /* opacity: 0.07; */
+}
+.colorInput {
+  border-radius: 50% !important;
+}
+
+.blueButton {
+  background: #3371a5;
+}
+
+.qrBox {
+  border-radius: 31px;
+  background: #fff;
+  box-shadow: 0px 0px 33px -16px #3371a5;
+}
