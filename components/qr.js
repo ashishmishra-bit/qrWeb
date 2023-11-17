@@ -10,6 +10,7 @@ const QRcode = () => {
   const [image, setImage] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [backgroundColor , setBackgroundColor] = useState('#ffffff')
   const hiddenFileInput = useRef(null);
 
   const handleClick = () => {
@@ -21,10 +22,14 @@ const QRcode = () => {
   };
 
   const handleColorChange = (e) => {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     setColor(e.target.value);
   };
 
+  const handleBGColorChange = (e) => {
+    // console.log(e.target.value);
+    setBackgroundColor(e.target.value);
+  };
   const handleFileChange = (event) => {
     const fileUploaded = event.target.files[0];
     // Process the file...
@@ -59,29 +64,85 @@ const QRcode = () => {
       reader.onloadend = function () {
         const base64data = reader.result;
         // Set the Base64 string as the image source
-        console.log(base64data);
+        // console.log(base64data);
         setImage(base64data);
       };
       setUrl("https://taptohello.com");
       setColor("#3371A5");
+      // setBackgroundColor("#ffffff")
+      hiddenFileInput.current.file = null;
     } catch (error) {
       console.error("Error generating QR code", error);
       setUrl("https://taptohello.com");
       setColor("#3371A5");
+      setBackgroundColor("#ffffff")
     } finally {
       setIsLoading(false);
     }
   };
 
-  const downloadImage = (data, filename = "QR.png") => {
-    const link = document.createElement("a");
-    link.href = data;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
+
+
+  
+
+//   const downloadImage = (data, filename = "QR.png") => {
+//     const link = document.createElement("a");
+//     link.href = data;
+//     link.download = filename;
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+//   };
+const downloadImage = (base64Image, filename = "QR.png") => {
+    const image = document.createElement('img');
+    image.src = base64Image;
+  
+    image.onload = () => {
+      // Create an off-screen canvas
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+  
+      // Set the canvas size
+      canvas.width = image.width;
+      canvas.height = image.height;
+  
+      // Draw the image onto the canvas
+      ctx.drawImage(image, 0, 0);
+  
+      // Manipulate the pixels for background color
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data; // the array of RGBA values
+  
+      // Define the target background color (white by default in QR codes)
+      const targetColor = { r: 255, g: 255, b: 255 };
+  
+      // Loop through every pixel to change the background color
+      for (let i = 0; i < data.length; i += 4) {
+        // Check if the pixel is white (background)
+        if (data[i] === targetColor.r && data[i + 1] === targetColor.g && data[i + 2] === targetColor.b) {
+          // Change to the desired background color
+          data[i] = parseInt(backgroundColor.slice(1, 3), 16);     // R
+          data[i + 1] = parseInt(backgroundColor.slice(3, 5), 16); // G
+          data[i + 2] = parseInt(backgroundColor.slice(5, 7), 16); // B
+        }
+      }
+  
+      // Put the modified data back on the canvas
+      ctx.putImageData(imageData, 0, 0);
+  
+      // Convert canvas to data URL and download
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  };
+  
+  
   const base64ToSVG = (base64Image) => {
     return `
         <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
@@ -140,7 +201,7 @@ const QRcode = () => {
                   onChange={handleUrlChange}
                 />
                 <button
-                  className="bg-orange-500 text-white sm:px-8 md:px-8 py-2 text-base md:text-lg rounded-r-full"
+                  className="bg-orange-600 text-white sm:px-8 md:px-8 py-2 text-base md:text-lg rounded-r-full"
                   onClick={generateQRCode}
                 >
                   Generate QR
@@ -201,14 +262,16 @@ const QRcode = () => {
                   <input
                     type="text"
                     placeholder="color"
-                    value="B#D1515"
+                    value= {backgroundColor}
                     className=" p-4 w-28 text-lg rounded-l-full focus:outline-none"
+                    onChange={handleBGColorChange}
                   />
                   <button className="bg-white  px-6 py-3  ">
                     <input
                       type="color"
-                      value="#000000"
+                      value= {backgroundColor}
                       className={`${styles.colorInput} w-6 h-6 bg-transparent border-none cursor-pointer rounded-full `}
+                      onChange={handleBGColorChange}
                     />
                   </button>
                 </div>
@@ -226,7 +289,7 @@ const QRcode = () => {
                 </p>
 
                 <button
-                  className={` ${styles.blueButton} text-white px-5 py-2 mb-5 rounded-full shadow-lg transition-colors flex items-center justify-center`}
+                  className={` ${styles.blueButton} text-white px-5 py-2 mb-5 rounded-full shadow-lg flex items-center justify-center`}
                 >
                   Subscribe to Hello Pro
                   <Image
@@ -248,7 +311,7 @@ const QRcode = () => {
                   organization/business with Hello Teams
                 </p>
 
-                <button className="bg-orange-500 text-white px-5 mb-5 py-2 rounded-full shadow-lg hover:bg-orange-600 transition-colors flex items-center justify-center">
+                <button className="bg-orange-600 text-white px-5 mb-5 py-2 rounded-full shadow-lg  transition-colors flex items-center justify-center">
                   Subscribe to Hello Teams
                   <Image
                     className="w-4 h-4 ml-4"
@@ -288,26 +351,26 @@ const QRcode = () => {
 
               {/* Simulating the half border effect with overlaid divs */}
               {/* Top-left corner */}
-              {/* 
+              
               <div className="absolute top-8 left-8 w-12 h-[2px] bg-cyan-700 rounded-tr-[31px]"></div>
               <div className="absolute top-8 left-8 w-[2px] h-12 bg-cyan-700 rounded-br-[31px]"></div>
-  */}
+  
 
               {/* Top-right corner */}
-              {/* 
+              
               <div className="absolute top-8 right-8 w-12 h-[2px] bg-cyan-700 rounded-tl-[31px]"></div>
               <div className="absolute top-8 right-8 w-[2px] h-12 bg-cyan-700 rounded-bl-[31px]"></div>
-*/}
+
               {/* Bottom-left corner */}
-              {/* 
+               
               <div className="absolute bottom-8 left-8 w-12 h-[2px] bg-cyan-700 rounded-br-[31px]"></div>
               <div className="absolute bottom-8 left-8 w-[2px] h-12 bg-cyan-700 rounded-tr-[31px]"></div>
-*/}
+
               {/* Bottom-right corner */}
-              {/* 
+               
               <div className="absolute bottom-8 right-8 w-12 h-[2px] bg-cyan-700 rounded-bl-[31px]"></div>
               <div className="absolute bottom-8 right-8 w-[2px] h-12 bg-cyan-700 rounded-tl-[31px]"></div>
-*/}
+
             </div>
 
             <div className="item-center justify-center">
