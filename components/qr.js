@@ -48,7 +48,7 @@ const QRcode = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8002/v1/qr",
+        "https://qr.taptohello.com/v1/qr",
         formData,
         {
           headers: {
