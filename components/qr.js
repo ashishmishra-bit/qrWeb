@@ -149,9 +149,40 @@ const downloadImage = (base64Image, filename = "QR.png") => {
             <image href="${base64Image}" width="200" height="200"/>
         </svg>
     `;
-  };
+  };  
+  
+  
+  const downloadSVG =async (base64Image,backgroundColor,fileName) => {
+    const formData = new FormData();
+    formData.append("bg_color", backgroundColor);
+    formData.append("image_file_b64", base64Image);
+    formData.append("size","auto")
 
-  const downloadSVG = (base64Image, filename = "QR.svg") => {
+    try {
+      const response = await axios.post(
+        "https://api.remove.bg/v1.0/removebg",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "X-API-Key":"rNd7ABHdEAXMgMpFSTEHesjz"
+          },
+          responseType: "blob",
+        }
+      );
+      const qrCodeBlob = response.data;
+      const reader = new FileReader();
+      reader.readAsDataURL(qrCodeBlob);
+      reader.onloadend = function () {
+        const base64data = reader.result
+        downloadSVGFile(base64data);
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  
+  const downloadSVGFile = (base64Image, filename = "QR.svg") => {
     const svgData = base64ToSVG(base64Image);
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
@@ -388,7 +419,7 @@ const downloadImage = (base64Image, filename = "QR.png") => {
               <div className="bg-white border border-cyan-700  rounded-full mx-4 px-6 py-2">
                 <button
                   className="text-blue-600 font-bold"
-                  onClick={() => downloadSVG(image)}
+                  onClick={() => downloadSVG(image,backgroundColor)}
                 >
                   SVG
                 </button>
@@ -402,6 +433,7 @@ const downloadImage = (base64Image, filename = "QR.png") => {
                 </button>
               </div>
             </div>
+            <div className="w-2/3"><p className="text-sm text-gray-700 text-justify">Enhance your QR experience by uploading a PNG image or logo. Background color customization is available in PNG and SVG formats only, it will be displayed in the downloaded QR image.</p></div>
           </div>
         </div>
       </div>
